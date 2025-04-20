@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
   <title>Fort Grand Salami</title>
@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #e0f0ff; /* Light blue background */
+      background: #e0f0ff;
       color: #1b1b1b;
       text-align: center;
       padding: 2em;
@@ -16,7 +16,7 @@
       margin-bottom: 0.5em;
     }
     .card {
-      background: #ffffff; /* White card */
+      background: #ffffff;
       padding: 1em;
       margin: 1em auto;
       border-radius: 12px;
@@ -31,7 +31,7 @@
       font-size: 1.6em;
       font-weight: bold;
       margin-bottom: 0.5em;
-      color: #0066cc; /* Darker blue for numbers */
+      color: #0066cc;
     }
     .updated {
       margin-top: 1em;
@@ -45,26 +45,23 @@
 
   <div class="card">
     <div class="label">🏠 Home Runs</div>
-    <div class="value" id="home">...</div>
+    <div class="value" id="home">–</div>
     <div class="label">🚌 Away Runs</div>
-    <div class="value" id="away">...</div>
+    <div class="value" id="away">–</div>
     <div class="label">⚾ Total Runs</div>
-    <div class="value" id="total">...</div>
+    <div class="value" id="total">–</div>
   </div>
 
   <div class="updated" id="lastUpdated">Last updated: --</div>
+  <div style="font-size: 0.8em; margin-top: 1em; color: #888;">
+    Data sourced from ESPN Scoreboard API
+  </div>
 
   <script>
-    function updateDate() {
-      const now = new Date();
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      const today = now.toLocaleDateString(undefined, options);
-      document.getElementById("title").textContent = `Fort Grand Salami (${today})`;
-    }
-
     async function loadRuns() {
       try {
-        const res = await fetch("https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard");
+        const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${todayStr}`);
         const data = await res.json();
 
         let home = 0, away = 0;
@@ -76,15 +73,27 @@
           });
         });
 
-        document.getElementById("home").textContent = home;
-        document.getElementById("away").textContent = away;
-        document.getElementById("total").textContent = home + away;
+        document.getElementById("home").textContent = home || "–";
+        document.getElementById("away").textContent = away || "–";
+
+        if (home === 0 && away === 0) {
+          document.getElementById("total").textContent = "Waiting for first pitch...";
+        } else {
+          document.getElementById("total").textContent = home + away;
+        }
 
         const timeNow = new Date().toLocaleTimeString();
         document.getElementById("lastUpdated").textContent = `Last updated: ${timeNow}`;
       } catch (err) {
         document.getElementById("lastUpdated").textContent = "⚠️ Error fetching data";
       }
+    }
+
+    function updateDate() {
+      const now = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      const today = now.toLocaleDateString(undefined, options);
+      document.getElementById("title").textContent = `Fort Grand Salami (${today})`;
     }
 
     updateDate();
