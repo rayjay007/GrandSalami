@@ -1,47 +1,116 @@
-<script>
-  async function loadRuns() {
-    try {
-      const res = await fetch("https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard");
-      const data = await res.json();
-
-      let home = 0, away = 0;
-      let scoredGames = 0;
-
-      data.events.forEach(event => {
-        const teams = event.competitions[0].competitors;
-
-        const homeTeam = teams.find(t => t.homeAway === "home");
-        const awayTeam = teams.find(t => t.homeAway === "away");
-
-        const homeScore = parseInt(homeTeam.score);
-        const awayScore = parseInt(awayTeam.score);
-
-        if (!isNaN(homeScore) && !isNaN(awayScore)) {
-          home += homeScore;
-          away += awayScore;
-          scoredGames++;
-        }
-      });
-
-      const total = home + away;
-
-      if (scoredGames === 0) {
-        document.getElementById("home").textContent = "Waiting...";
-        document.getElementById("away").textContent = "Waiting...";
-        document.getElementById("total").textContent = "Waiting for first pitch...";
-      } else {
-        document.getElementById("home").textContent = home;
-        document.getElementById("away").textContent = away;
-        document.getElementById("total").textContent = total;
-      }
-
-      const timeNow = new Date().toLocaleTimeString();
-      document.getElementById("lastUpdated").textContent = `Last updated: ${timeNow}`;
-    } catch (err) {
-      document.getElementById("lastUpdated").textContent = "⚠️ Error fetching data";
-      document.getElementById("home").textContent = "—";
-      document.getElementById("away").textContent = "—";
-      document.getElementById("total").textContent = "Check connection";
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fort Grand Salami</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e0f0ff; /* Light blue background */
+      color: #1b1b1b;
+      text-align: center;
+      padding: 2em;
     }
-  }
-</script>
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 0.5em;
+    }
+    .card {
+      background: #ffffff; /* White card */
+      padding: 1em;
+      margin: 1em auto;
+      border-radius: 12px;
+      max-width: 320px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .label {
+      font-size: 1em;
+      color: #4a4a4a;
+    }
+    .value {
+      font-size: 1.6em;
+      font-weight: bold;
+      margin-bottom: 0.5em;
+      color: #0066cc; /* Darker blue for numbers */
+    }
+    .updated {
+      margin-top: 1em;
+      font-size: 0.9em;
+      color: #666666;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">Fort Grand Salami</h1>
+
+  <div class="card">
+    <div class="label">🏠 Home Runs</div>
+    <div class="value" id="home">...</div>
+    <div class="label">🚌 Away Runs</div>
+    <div class="value" id="away">...</div>
+    <div class="label">⚾ Total Runs</div>
+    <div class="value" id="total">...</div>
+  </div>
+
+  <div class="updated" id="lastUpdated">Last updated: --</div>
+
+  <script>
+    function updateDate() {
+      const now = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      const today = now.toLocaleDateString(undefined, options);
+      document.getElementById("title").textContent = `Fort Grand Salami (${today})`;
+    }
+
+    async function loadRuns() {
+      try {
+        const res = await fetch("https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard");
+        const data = await res.json();
+
+        let home = 0, away = 0;
+        let scoredGames = 0;
+
+        data.events.forEach(event => {
+          const teams = event.competitions[0].competitors;
+
+          const homeTeam = teams.find(t => t.homeAway === "home");
+          const awayTeam = teams.find(t => t.homeAway === "away");
+
+          const homeScore = parseInt(homeTeam.score);
+          const awayScore = parseInt(awayTeam.score);
+
+          if (!isNaN(homeScore) && !isNaN(awayScore)) {
+            home += homeScore;
+            away += awayScore;
+            scoredGames++;
+          }
+        });
+
+        const total = home + away;
+
+        if (scoredGames === 0) {
+          document.getElementById("home").textContent = "Waiting...";
+          document.getElementById("away").textContent = "Waiting...";
+          document.getElementById("total").textContent = "Waiting for first pitch...";
+        } else {
+          document.getElementById("home").textContent = home;
+          document.getElementById("away").textContent = away;
+          document.getElementById("total").textContent = total;
+        }
+
+        const timeNow = new Date().toLocaleTimeString();
+        document.getElementById("lastUpdated").textContent = `Last updated: ${timeNow}`;
+      } catch (err) {
+        document.getElementById("lastUpdated").textContent = "⚠️ Error fetching data";
+        document.getElementById("home").textContent = "—";
+        document.getElementById("away").textContent = "—";
+        document.getElementById("total").textContent = "Check connection";
+      }
+    }
+
+    updateDate();
+    loadRuns();
+    setInterval(loadRuns, 300000); // every 5 minutes
+  </script>
+</body>
+</html>
